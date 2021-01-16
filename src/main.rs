@@ -76,9 +76,16 @@ pub fn insert_data(conn: &SqliteConnection, sicaklik: f32, nem: f32) -> usize {
 }
 
 #[post("/sensor")]
-async fn parse_post(info: web::Json<SensorPostData>) -> impl Responder {
+async fn parse_post(info: web::Json<SensorPostData>, pool: web::Data<PoolState>) -> impl Responder {
     let sicaklik = info.sicaklik.clone();
     let nem = info.nem.clone();
+    let conn = pool.db_pool.get();
+    match conn {
+        Ok(c) => {
+            insert_data(c.deref(), sicaklik, nem);
+        }
+        Err(e) => panic!(&e.to_string()),
+    };
 
     HttpResponse::Ok()
         .content_type("application/json")
