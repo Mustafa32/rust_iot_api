@@ -54,7 +54,7 @@ async fn main() -> std::io::Result<()> {
             .service(parse_post)
             .app_data(web::JsonConfig::default().error_handler(json_error_handler))
     })
-    .bind(("127.0.0.1",port))?
+    .bind(("0.0.0.0",port))?
     .run()
     .await
 }
