@@ -1,6 +1,5 @@
 #[macro_use]
 extern crate diesel;
-extern crate dotenv;
 
 pub mod models;
 pub mod schema;
@@ -11,7 +10,6 @@ use actix_web::{
 use core::panic;
 use diesel::prelude::*;
 use diesel::pg::PgConnection;
-use dotenv::dotenv;
 use r2d2::Pool;
 use r2d2_diesel::ConnectionManager;
 use std::env;
@@ -28,12 +26,11 @@ type PoolState = web::Data<PoolData>;
 async fn main() -> std::io::Result<()> {
     //std::env::set_var("RUST_LOG", "actix_web=info");
     env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
-    dotenv().ok();
     let db_url = env::var("DATABASE_URL");
     let db_url = match db_url {
         Ok(db_url) => db_url,
         Err(_) => {
-            panic!("Veri tabanı bağlantısını .env dosyasında belirtin.")
+            panic!("Veri tabanı bağlantısını DATABASE_URL çevre değişkeninde belirtin.")
         }
     };
     println!("{:} veri tabanı kullanılıyor. ", db_url);
