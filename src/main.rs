@@ -45,7 +45,7 @@ async fn main() -> std::io::Result<()> {
     let port = env::var("PORT")
         .unwrap_or_else(|_| "3000".to_string())
         .parse()
-        .expect("PORT must be a number");
+        .expect("PORT rakam olmalı");
     HttpServer::new(move || {
         App::new()
             .data(db_pool_state.clone())
