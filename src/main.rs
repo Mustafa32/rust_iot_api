@@ -42,7 +42,10 @@ async fn main() -> std::io::Result<()> {
         .build(manager)
         .expect("Bağlantı havuzu oluşturulamadı.");
     let db_pool_state = web::Data::new(PoolData { db_pool: pool });
-
+    let port = env::var("PORT")
+        .unwrap_or_else(|_| "3000".to_string())
+        .parse()
+        .expect("PORT must be a number");
     HttpServer::new(move || {
         App::new()
             .data(db_pool_state.clone())
@@ -51,7 +54,7 @@ async fn main() -> std::io::Result<()> {
             .service(parse_post)
             .app_data(web::JsonConfig::default().error_handler(json_error_handler))
     })
-    .bind("127.0.0.1:8000")?
+    .bind(("127.0.0.1",port))?
     .run()
     .await
 }
