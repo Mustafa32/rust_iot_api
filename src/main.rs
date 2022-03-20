@@ -126,3 +126,4 @@ pub async fn index(pool: web::Data<PoolState>) -> HttpResponse {
         Err(e) => HttpResponse::Ok().json(["error", &e.to_string()]),
     }
 }
+
