@@ -22,9 +22,6 @@ use tera::{Context, Tera};
 pub struct PoolData {
     db_pool: DbPool,
 }
-struct AppData {
-    tmpl: Tera,
-}
 type PoolState = web::Data<PoolData>;
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -96,7 +93,7 @@ async fn parse_post(info: web::Json<SensorPostData>, pool: web::Data<PoolState>)
 
     HttpResponse::Ok()
         .content_type("application/json")
-        .json((nem, sicaklik))
+        .json(( sicaklik,nem))
 }
 
 pub fn json_error_handler(err: error::JsonPayloadError, _req: &HttpRequest) -> error::Error {
