@@ -5,11 +5,11 @@ pub mod models;
 pub mod schema;
 
 use actix_web::{
-    error, post, web, App, HttpRequest, HttpResponse, HttpServer, Responder,middleware::Logger,
+    error, middleware::Logger, post, web, App, HttpRequest, HttpResponse, HttpServer, Responder,
 };
 use core::panic;
-use diesel::prelude::*;
 use diesel::pg::PgConnection;
+use diesel::prelude::*;
 use r2d2::Pool;
 use r2d2_diesel::ConnectionManager;
 use std::env;
@@ -17,10 +17,14 @@ pub type DbPool = Pool<ConnectionManager<PgConnection>>;
 use models::SensorData;
 use models::SensorPostData;
 use std::ops::Deref;
+use tera::{Context, Tera};
+
 pub struct PoolData {
     db_pool: DbPool,
 }
-
+struct AppData {
+    tmpl: Tera,
+}
 type PoolState = web::Data<PoolData>;
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -46,15 +50,20 @@ async fn main() -> std::io::Result<()> {
         .unwrap_or_else(|_| "3000".to_string())
         .parse()
         .expect("PORT rakam olmalı");
+
     HttpServer::new(move || {
+        let tera = Tera::new(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/**/*")).unwrap();
+
         App::new()
-            .data(db_pool_state.clone())
+            .app_data(web::Data::new(tera))
+            .app_data(web::Data::new(db_pool_state.clone()))
             .wrap(Logger::new("%a %r %s %b %{Referer}i %{User-Agent}i %T"))
             .route("/", web::get().to(index))
+            //            .route("/veriler", web::get().to(all_sensor_data))
             .service(parse_post)
             .app_data(web::JsonConfig::default().error_handler(json_error_handler))
     })
-    .bind(("0.0.0.0",port))?
+    .bind(("0.0.0.0", port))?
     .run()
     .await
 }
@@ -113,7 +122,7 @@ pub fn get_all_data(conn: &PgConnection) -> Result<Vec<SensorData>, diesel::resu
     }
 }
 
-pub async fn index(pool: web::Data<PoolState>) -> HttpResponse {
+pub async fn index(pool: web::Data<PoolState>, tmpl: web::Data<tera::Tera>) -> HttpResponse {
     let conn = pool.db_pool.get();
     let conn = match conn {
         Ok(c) => c,
@@ -121,9 +130,17 @@ pub async fn index(pool: web::Data<PoolState>) -> HttpResponse {
     };
 
     let all_data = get_all_data(conn.deref());
+    let mut ctx = Context::new();
     match all_data {
-        Ok(data) => HttpResponse::Ok().json(data),
+        Ok(data) => {
+            ctx.insert("data", &data);
+            let rendered = tmpl.render("index.html", &ctx).unwrap();
+            return HttpResponse::Ok().body(rendered);
+        }
+
+
+
+        
         Err(e) => HttpResponse::Ok().json(["error", &e.to_string()]),
     }
 }
-

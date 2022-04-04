@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+<div id="app">
+    {% block content %}
+    <ul>
+        {% for d in data %}
+        <li> Sıcaklık: {{d.sicaklik}} Nem: {{d.nem}}</li>
+        {% endfor %}
+    </ul>
+    {% endblock content %}
+
+</div>
+<script>
+    new Vue({
+        el: "#app",
+        data: {
+
+        }
+    });
+</script>

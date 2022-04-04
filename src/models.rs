@@ -1,6 +1,6 @@
 use crate::schema::sensor_data;
-use serde::{Deserialize, Serialize};
 use chrono::NaiveDateTime;
+use serde::{Deserialize, Serialize};
 #[derive(Queryable, Serialize, Deserialize, Debug, Clone)]
 pub struct SensorData {
     pub id: i32,
