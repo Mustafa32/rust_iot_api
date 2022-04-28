@@ -93,7 +93,7 @@ async fn parse_post(info: web::Json<SensorPostData>, pool: web::Data<PoolState>)
 
     HttpResponse::Ok()
         .content_type("application/json")
-        .json(( sicaklik,nem))
+        .json((sicaklik, nem))
 }
 
 pub fn json_error_handler(err: error::JsonPayloadError, _req: &HttpRequest) -> error::Error {
@@ -135,9 +135,6 @@ pub async fn index(pool: web::Data<PoolState>, tmpl: web::Data<tera::Tera>) -> H
             return HttpResponse::Ok().body(rendered);
         }
 
-
-
-        
-        Err(e) => HttpResponse::Ok().json(["error", &e.to_string()]),
+        Err(e) => HttpResponse::InternalServerError().json(["error", &e.to_string()]),
     }
 }
